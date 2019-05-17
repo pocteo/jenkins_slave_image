@@ -9,16 +9,30 @@ RUN \
   apt-get install -y --force-yes ansible
 
 
-RUN \
-  apt-get update && \
-  apt-get install -y curl && \
-  curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/darwin/amd64/kubectl && \
-  chmod +x ./kubectl && \
-  mv ./kubectl /usr/local/bin/kubectl
-RUN mkdir .kube
-COPY  config  .kube/config
+ADD https://storage.googleapis.com/kubernetes-release/release/v1.6.4/bin/linux/amd64/kubectl /usr/local/bin/kubectl
 
-RUN apt-get update && apt-get install -y openjdk-8-jdk
+RUN set -x && \
+    chmod +x /usr/local/bin/kubectl 
+       
+RUN mkdir /root/.kube
+COPY  config  /root/.kube/config
+
+# Install OpenJDK-8
+RUN apt-get update && \
+    apt-get install -y openjdk-8-jdk && \
+    apt-get install -y ant && \
+    apt-get clean;
+
+# Fix certificate issues
+RUN apt-get update && \
+    apt-get install ca-certificates-java && \
+    apt-get clean && \
+    update-ca-certificates -f;
+
+# Setup JAVA_HOME -- useful for docker commandline
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
+RUN export JAVA_HOME
+
 
 # install ansible
 # install kubectl
@@ -40,7 +54,8 @@ RUN apt-get clean && \
 
 EXPOSE 22
 
-CMD  ["/usr/sbin/sshd", "-D"]
+CMD ["/usr/sbin/sshd", "-D"]
+
 
 
 
