@@ -8,6 +8,14 @@ RUN \
   apt-get update && \
   apt-get install -y --force-yes ansible
 
+RUN \
+  apt install -y curl && \
+  export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)" && \
+  echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" |  tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+  curl https://packages.cloud.google.com/apt/doc/apt-key.gpg |  apt-key add - && \
+  apt-get update && \
+  apt install -y google-cloud-sdk
+
 
 ADD https://storage.googleapis.com/kubernetes-release/release/v1.6.4/bin/linux/amd64/kubectl /usr/local/bin/kubectl
 
